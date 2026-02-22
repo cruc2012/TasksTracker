@@ -1,0 +1,256 @@
+<!-- login.html - TaskTracker Login (Working Version) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TaskTracker Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --panel: white;
+      --text: #333;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+    }
+
+    .box {
+      background: var(--panel);
+      padding: 40px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 10px;
+      border: 2px solid #e0e0e0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: #000;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .google-btn {
+      background: white;
+      color: #333;
+      border: 2px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #ddd;
+      margin: 0 10px;
+    }
+
+    #msg {
+      margin-top: 15px;
+      color: #dc3545;
+      display: none;
+      padding: 10px;
+      background: #f8d7da;
+      border-radius: 8px;
+    }
+
+    .signup-link {
+      margin-top: 20px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .signup-link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
+    <h1>Welcome to TaskTracker</h1>
+    <p class="subtitle">Sign in to continue</p>
+
+    <button class="google-btn" onclick="googleLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="divider">or</div>
+
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Sign In</button>
+
+    <div id="msg"></div>
+
+    <p class="signup-link">Need an account? <a href="/signup.html">Sign up</a></p>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    
+    const supabase = createClient(
+      "https://uqmvpljozjdkvgqneprp.supabase.co",
+      "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
+    );
+
+    window.supabase = supabase;
+
+    // Check if already logged in
+    if (localStorage.getItem('uuid')) {
+      location.href = '/index.html';
+    }
+  </script>
+
+  <script>
+    let supabase = window.supabase;
+
+    function showError(msg) {
+      const el = document.getElementById('msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function login() {
+      const username = document.getElementById('username').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        showError('Please enter username and password');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .single();
+
+      if (error || !data) {
+        showError('Incorrect username or password');
+        return;
+      }
+
+      // Save session
+      localStorage.setItem('uuid', data.username);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('firstName', data.first_name);
+      localStorage.setItem('color', data.color);
+      localStorage.setItem('role', data.role);
+
+      location.href = '/index.html';
+    }
+
+    function googleLogin() {
+      google.accounts.id.initialize({
+        client_id: 'YOUR_GOOGLE_CLIENT_ID',
+        callback: handleGoogle,
+        auto_select: false
+      });
+      
+      google.accounts.id.prompt();
+    }
+
+    async function handleGoogle(response) {
+      if (response.credential) {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const email = payload.email;
+        
+        // Find user by email
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', email)
+          .single();
+
+        if (error || !data) {
+          // User doesn't exist, redirect to signup
+          location.href = '/signup.html';
+          return;
+        }
+
+        // Save session
+        localStorage.setItem('uuid', data.username);
+        localStorage.setItem('username', data.username);
+        localStorage.setItem('firstName', data.first_name);
+        localStorage.setItem('color', data.color);
+        localStorage.setItem('role', data.role);
+
+        location.href = '/index.html';
+      }
+    }
+
+    // Enter key support
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+
+</body>
+</html>
