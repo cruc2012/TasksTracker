@@ -1,0 +1,117 @@
+<!-- counter.html - Simple Supabase Counter Test -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Counter Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    
+    // Your Supabase credentials
+    const supabase = createClient(
+      "https://uqmvpljozjdkvgqneprp.supabase.co",
+      "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
+    );
+
+    // Make it global so buttons can access it
+    window.supabase = supabase;
+    window.count = 0;
+
+    async function loadCount() {
+      const { data, error } = await supabase
+        .from('counter')
+        .select('value')
+        .eq('id', 1)
+        .single();
+      
+      if (error) {
+        console.error('Error loading:', error);
+        document.getElementById('status').textContent = 'Error: ' + error.message;
+        return;
+      }
+      
+      window.count = data.value;
+      updateDisplay();
+      document.getElementById('status').textContent = 'Connected!';
+    }
+
+    async function increment() {
+      const newValue = window.count + 1;
+      
+      const { error } = await supabase
+        .from('counter')
+        .update({ value: newValue })
+        .eq('id', 1);
+      
+      if (error) {
+        console.error('Error updating:', error);
+        document.getElementById('status').textContent = 'Error: ' + error.message;
+        return;
+      }
+      
+      window.count = newValue;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById('number').textContent = window.count;
+    }
+
+    // Expose functions to window
+    window.increment = increment;
+    window.loadCount = loadCount;
+
+    // Load on start
+    loadCount();
+  </script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #1a1a2e;
+      color: white;
+    }
+    .box {
+      text-align: center;
+      padding: 40px;
+      background: #16213e;
+      border-radius: 20px;
+    }
+    #number {
+      font-size: 120px;
+      font-weight: bold;
+      color: #e94560;
+      margin: 20px 0;
+    }
+    button {
+      padding: 15px 40px;
+      font-size: 24px;
+      background: #e94560;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff6b6b;
+    }
+    #status {
+      margin-top: 20px;
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div id="number">0</div>
+    <button onclick="increment()">+1</button>
+    <div id="status">Loading...</div>
+  </div>
+</body>
+</html>
