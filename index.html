@@ -1,267 +1,278 @@
-<!-- index.html - Main Dashboard (Redirects to login if not authenticated) -->
+<!-- index.html - Main Dashboard -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskTracker - Family Tasks</title>
-    <link rel="icon" type="image/png" href="/images/logo.png">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        .loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            font-size: 1.2rem;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 15px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .dashboard {
-            display: none;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .user-avatar:hover {
-            transform: scale(1.1);
-        }
-        
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .card h2 {
-            margin-bottom: 16px;
-            color: #333;
-        }
-        
-        .task-item {
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>TaskTracker - Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .loading-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .dashboard {
+      display: none;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .task-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    #userName {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-    <div class="loading-screen" id="loading">
-        <div class="spinner"></div>
-        Checking authentication...
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loading">
+    <div class="spinner"></div>
+    Checking authentication...
+  </div>
+  
+  <!-- Dashboard -->
+  <div class="dashboard" id="dashboard">
+    <div class="header">
+      <div class="logo-section">
+        <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
+        <h1>TaskTracker</h1>
+      </div>
+      <div class="user-menu">
+        <span id="userName">User</span>
+        <button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>
+        <div class="user-avatar" id="userAvatar" onclick="goToSettings()"></div>
+        <button class="btn btn-danger" onclick="signOut()">Sign Out</button>
+      </div>
     </div>
     
-    <div class="dashboard" id="dashboard">
-        <div class="header">
-            <div class="logo-section">
-                <img src="/images/logo.png" alt="TaskTracker" class="logo">
-                <h1>TaskTracker</h1>
-            </div>
-            <div class="user-menu">
-                <button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>
-                <div class="user-avatar" id="userAvatar" onclick="goToSettings()"></div>
-                <button class="btn btn-danger" onclick="signOut()">Sign Out</button>
-            </div>
+    <div class="content-grid">
+      <div class="card">
+        <h2>My Tasks</h2>
+        <div id="myTasks">
+          <div class="empty-state">No tasks yet. Create one!</div>
         </div>
-        
-        <div class="content-grid">
-            <div class="card">
-                <h2>My Tasks</h2>
-                <div id="myTasks">
-                    <div class="empty-state">No tasks yet. Create one!</div>
-                </div>
-            </div>
-            
-            <div class="card" id="familyCard" style="display: none;">
-                <h2>Family Tasks</h2>
-                <div id="familyTasks">
-                    <div class="empty-state">No family tasks yet.</div>
-                </div>
-            </div>
-            
-            <div class="card" id="rewardsCard">
-                <h2>Rewards</h2>
-                <div id="rewards">
-                    <div class="empty-state">Complete tasks to earn rewards!</div>
-                </div>
-            </div>
+      </div>
+      
+      <div class="card" id="familyCard" style="display: none;">
+        <h2>Family Tasks</h2>
+        <div id="familyTasks">
+          <div class="empty-state">No family tasks yet.</div>
         </div>
+      </div>
+      
+      <div class="card" id="rewardsCard">
+        <h2>Rewards</h2>
+        <div id="rewards">
+          <div class="empty-state">Complete tasks to earn rewards!</div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const SUPABASE_URL = 'https://uqmvpljozjdkvgqneprp.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        let currentUser = null;
-        let userProfile = null;
-        
-        async function checkAuth() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (!session) {
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            currentUser = session.user;
-            await loadUserProfile();
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            updateUI();
-        }
-        
-        async function loadUserProfile() {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-            
-            if (data) {
-                userProfile = data;
-            } else if (error && error.code === 'PGRST116') {
-                // No profile found, redirect to onboarding
-                window.location.href = '/signup.html?onboarding=true';
-                return;
-            }
-        }
-        
-        function updateUI() {
-            if (userProfile) {
-                const avatar = document.getElementById('userAvatar');
-                avatar.textContent = userProfile.first_name ? userProfile.first_name[0].toUpperCase() : '?';
-                avatar.style.backgroundColor = userProfile.color || '#667eea';
-                
-                if (userProfile.role === 'parent') {
-                    document.getElementById('familyCard').style.display = 'block';
-                }
-            }
-        }
-        
-        function goToSettings() {
-            window.location.href = '/user.html';
-        }
-        
-        async function signOut() {
-            await supabase.auth.signOut();
-            window.location.href = '/login.html';
-        }
-        
-        function openTaskModal() {
-            alert('Task creation coming soon!');
-        }
-        
-        checkAuth();
-    </script>
+  <script>
+    // Check authentication immediately
+    function checkAuth() {
+      console.log('Checking auth...');
+      
+      // Get user data from localStorage (our auth system)
+      const uuid = localStorage.getItem('uuid');
+      const username = localStorage.getItem('username');
+      const firstName = localStorage.getItem('firstName');
+      const color = localStorage.getItem('color');
+      const role = localStorage.getItem('role');
+      
+      console.log('Auth data:', { uuid, username, firstName, color, role });
+      
+      if (!uuid || !username) {
+        // Not logged in, redirect to login
+        console.log('Not authenticated, redirecting to login');
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // User is authenticated, show dashboard
+      console.log('Authenticated as:', username);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      
+      // Update UI with user info
+      document.getElementById('userName').textContent = firstName || username;
+      const avatar = document.getElementById('userAvatar');
+      avatar.textContent = (firstName || username)[0].toUpperCase();
+      avatar.style.backgroundColor = color || '#667eea';
+      
+      // Show family card if parent
+      if (role === 'parent') {
+        document.getElementById('familyCard').style.display = 'block';
+      }
+      
+      // Load tasks (placeholder for now)
+      loadTasks();
+    }
+
+    function loadTasks() {
+      // TODO: Load tasks from Supabase
+      console.log('Loading tasks...');
+    }
+
+    function openTaskModal() {
+      alert('Task creation coming soon!');
+    }
+
+    function goToSettings() {
+      window.location.href = '/user.html';
+    }
+
+    function signOut() {
+      // Clear localStorage
+      localStorage.removeItem('uuid');
+      localStorage.removeItem('username');
+      localStorage.removeItem('firstName');
+      localStorage.removeItem('color');
+      localStorage.removeItem('role');
+      
+      // Redirect to login
+      window.location.href = '/login.html';
+    }
+
+    // Run auth check immediately
+    checkAuth();
+  </script>
 </body>
 </html>
