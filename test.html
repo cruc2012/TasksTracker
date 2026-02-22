@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Test</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <button onclick="testGoogle()">Test Google API</button>
+  <div id="result"></div>
+
+  <script>
+    function testGoogle() {
+      const result = document.getElementById('result');
+      
+      if (typeof google === 'undefined') {
+        result.innerHTML = 'ERROR: google is undefined<br>Script not loaded';
+        return;
+      }
+      
+      if (!google.accounts) {
+        result.innerHTML = 'ERROR: google.accounts is undefined';
+        return;
+      }
+      
+      if (!google.accounts.id) {
+        result.innerHTML = 'ERROR: google.accounts.id is undefined';
+        return;
+      }
+      
+      result.innerHTML = 'SUCCESS: Google API is ready!<br>Client ID: 893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com';
+      
+      // Try to initialize
+      try {
+        google.accounts.id.initialize({
+          client_id: '893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com',
+          callback: (response) => {
+            result.innerHTML += '<br>Callback received: ' + JSON.stringify(response).substring(0, 100);
+          }
+        });
+        
+        result.innerHTML += '<br>Initialized successfully. Prompting...';
+        
+        google.accounts.id.prompt((notification) => {
+          result.innerHTML += '<br>Prompt: ' + JSON.stringify(notification);
+        });
+        
+      } catch (e) {
+        result.innerHTML += '<br>Init error: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
