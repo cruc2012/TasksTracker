@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>TaskTracker Sign Up</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -188,7 +189,6 @@
       color: white;
       font-size: 48px;
       font-weight: bold;
-      position: relative;
     }
 
     .color-grid {
@@ -228,7 +228,7 @@
       color: #333;
     }
 
-    #msg {
+    #msg, #msg2, #msg3 {
       margin-top: 15px;
       color: #dc3545;
       font-size: 14px;
@@ -261,7 +261,7 @@
 </head>
 <body>
 
-  <!-- STEP 1 -->
+  <!-- STEP 1: Account Creation -->
   <div class="box step active" id="step1">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Create Account</h1>
@@ -274,8 +274,8 @@
 
     <div class="divider">or</div>
 
-    <input id="username" placeholder="Choose a username">
-    <div class="hint">Letters, numbers, underscores only</div>
+    <input id="email" type="email" placeholder="Email address">
+    <div class="hint">Your email for login</div>
     
     <input id="password" type="password" placeholder="Create a password">
     <div class="hint">Min 6 characters</div>
@@ -287,7 +287,7 @@
     <p class="login-link">Already have an account? <a href="/login.html">Sign in</a></p>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- STEP 2: Age & Birthday -->
   <div class="box step" id="step2">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Welcome to TaskTracker</h1>
@@ -331,10 +331,10 @@
     </div>
 
     <button id="continueBtn">Continue</button>
-    <div id="msg2" style="display:none; color:red; margin-top:10px;"></div>
+    <div id="msg2"></div>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 3: Profile -->
   <div class="box step" id="step3">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Almost there!</h1>
@@ -345,6 +345,7 @@
     </div>
 
     <input id="firstName" placeholder="Your first name">
+    <input id="username" placeholder="Choose a username">
 
     <div style="text-align: left; margin-top: 20px;">
       <label style="font-weight: 600;">Pick your color</label>
@@ -367,37 +368,51 @@
       <button id="finishBtn">Let's Go!</button>
     </div>
     
-    <div id="msg3" style="display:none; color:red; margin-top:10px;"></div>
+    <div id="msg3"></div>
   </div>
 
-  <!-- Load Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load Google -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- Main Script -->
   <script>
     // Initialize Supabase
-    const supabaseClient = window.supabase.createClient(
+    const supabase = window.supabase.createClient(
       "https://uqmvpljozjdkvgqneprp.supabase.co",
       "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
     );
 
     // User data
     let userData = {
-      username: '',
-      password: '',
+      userId: null,
       email: '',
-      google: false,
+      username: '',
       age: 25,
       role: 'parent',
       color: '#667eea',
       firstName: ''
     };
 
-    // Check if logged in
-    if (localStorage.getItem('uuid')) {
-      location.href = '/index.html';
+    // Check if already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Check if profile exists
+        checkProfile(session.user.id);
+      }
+    });
+
+    async function checkProfile(userId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (profile) {
+        // Profile exists, go to dashboard
+        window.location.href = '/index.html';
+      } else {
+        // No profile, continue with onboarding
+        userData.userId = userId;
+        userData.email = (await supabase.auth.getUser()).data.user.email;
+        showStep(2);
+      }
     }
 
     // Fill days dropdown
@@ -408,45 +423,25 @@
       document.getElementById('birthDay').appendChild(opt);
     }
 
-    // Navigation
     function showStep(n) {
       document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
       document.getElementById('step' + n).classList.add('active');
-      // Clear messages when switching steps
       document.querySelectorAll('[id^="msg"]').forEach(el => el.style.display = 'none');
     }
 
     function showError(msg, elementId = 'msg') {
       const el = document.getElementById(elementId);
-      if (!el) {
-        // Fallback to main msg if specific not found
-        const mainMsg = document.getElementById('msg') || document.getElementById('msg2') || document.getElementById('msg3');
-        if (mainMsg) {
-          mainMsg.textContent = msg;
-          mainMsg.style.display = 'block';
-        }
-        return;
-      }
       el.textContent = msg;
       el.style.display = 'block';
     }
 
-    function hideError() {
-      document.querySelectorAll('[id^="msg"]').forEach(el => el.style.display = 'none');
-    }
-
-    // STEP 1: Username signup
+    // STEP 1: Email/Password signup
     async function createAccount() {
-      const username = document.getElementById('username').value.trim().toLowerCase();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      if (!username || !password) {
+      if (!email || !password) {
         showError('Please fill in all fields');
-        return;
-      }
-
-      if (!/^[a-z0-9_]+$/.test(username)) {
-        showError('Username can only contain letters, numbers, and underscores');
         return;
       }
 
@@ -455,107 +450,41 @@
         return;
       }
 
-      hideError();
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
 
-      try {
-        const { data: existing } = await supabaseClient
-          .from('profiles')
-          .select('username')
-          .eq('username', username)
-          .single();
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password
+      });
 
-        if (existing) {
-          showError('Username already taken');
-          return;
-        }
+      btn.disabled = false;
+      btn.textContent = 'Sign Up';
 
-        userData.username = username;
-        userData.password = password;
-        userData.email = username + '@tasktracker.local';
-        showStep(2);
-      } catch (err) {
-        userData.username = username;
-        userData.password = password;
-        userData.email = username + '@tasktracker.local';
-        showStep(2);
+      if (error) {
+        showError(error.message);
+        return;
       }
+
+      userData.userId = data.user.id;
+      userData.email = email;
+      showStep(2);
     }
 
     // Google Sign In
-    function googleSignIn() {
-      if (typeof google === 'undefined') {
-        showError('Google API not loaded yet. Please wait and try again.');
-        return;
-      }
+    async function googleSignIn() {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/signup.html'
+        }
+      });
 
-      try {
-        google.accounts.id.initialize({
-          client_id: '893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com',
-          callback: handleGoogleCredential,
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
-
-        google.accounts.id.prompt((notification) => {
-          if (notification.isNotDisplayed()) {
-            showError('Sign-in popup blocked. Please allow popups for this site.');
-          } else if (notification.isSkippedMoment()) {
-            showError('Sign-in was skipped. Please try again.');
-          }
-        });
-      } catch (e) {
-        showError('Google Sign-In error: ' + e.message);
-        console.error(e);
+      if (error) {
+        showError('Google login failed: ' + error.message);
       }
     }
-
-    // Global callback for Google
-    window.handleGoogleCredential = async function(response) {
-      console.log('Google callback:', response);
-      
-      if (!response.credential) {
-        showError('No credential received from Google');
-        return;
-      }
-
-      try {
-        const base64Url = response.credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const json = atob(base64);
-        const payload = JSON.parse(json);
-        
-        userData.email = payload.email;
-        userData.google = true;
-        userData.firstName = payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'User');
-        
-        const base = payload.email.split('@')[0];
-        let username = base;
-        let counter = 1;
-        
-        while (true) {
-          const { data } = await supabaseClient
-            .from('profiles')
-            .select('username')
-            .eq('username', username)
-            .single();
-          
-          if (!data) break;
-          username = base + counter;
-          counter++;
-          if (counter > 100) break;
-        }
-        
-        userData.username = username;
-        
-        document.getElementById('firstName').value = userData.firstName;
-        updateInitial(userData.firstName);
-        showStep(2);
-        
-      } catch (err) {
-        console.error('Google error:', err);
-        showError('Google sign-in failed: ' + err.message);
-      }
-    };
 
     // STEP 2: Age/Birthday
     function updateAge(val) {
@@ -572,7 +501,7 @@
       }
     }
 
-    function goToStep3() {
+    async function goToStep3() {
       const month = document.getElementById('birthMonth').value;
       const day = document.getElementById('birthDay').value;
       
@@ -583,7 +512,24 @@
       
       userData.birthMonth = parseInt(month);
       userData.birthDay = parseInt(day);
-      hideError();
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showError('Session expired. Please start over.', 'msg2');
+        return;
+      }
+      
+      userData.userId = user.id;
+      userData.email = user.email;
+      
+      // Pre-fill name if from Google
+      if (user.user_metadata?.full_name) {
+        const firstName = user.user_metadata.full_name.split(' ')[0];
+        document.getElementById('firstName').value = firstName;
+        updateInitial(firstName);
+      }
+      
       showStep(3);
     }
 
@@ -604,63 +550,69 @@
     }
 
     async function finish() {
-      console.log('Finish clicked', userData);
-      
       const firstName = document.getElementById('firstName').value.trim();
-      
-      if (!firstName) {
-        showError('Please enter your name', 'msg3');
+      const username = document.getElementById('username').value.trim().toLowerCase();
+
+      if (!firstName || !username) {
+        showError('Please fill in all fields', 'msg3');
         return;
       }
-      
+
+      if (!/^[a-z0-9_]+$/.test(username)) {
+        showError('Username can only contain letters, numbers, and underscores', 'msg3');
+        return;
+      }
+
       userData.firstName = firstName;
-      
+      userData.username = username;
+
       const btn = document.getElementById('finishBtn');
       btn.disabled = true;
       btn.textContent = 'Creating...';
-      
-      // Prepare data for insertion
-      const profileData = {
+
+      try {
+        // Check if username exists
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('username', username)
+          .single();
+
+        if (existing) {
+          showError('Username already taken', 'msg3');
+          btn.disabled = false;
+          btn.textContent = 'Let\'s Go!';
+          return;
+        }
+      } catch (err) {
+        // Username doesn't exist, continue
+      }
+
+      // Create profile
+      const { error } = await supabase.from('profiles').insert([{
+        id: userData.userId,
         username: userData.username,
         first_name: userData.firstName,
-        email: userData.email,
         age: userData.age,
         birth_month: userData.birthMonth,
         birth_day: userData.birthDay,
         role: userData.role,
-        color: userData.color,
-        password: userData.google ? null : userData.password
-      };
-      
-      console.log('Inserting profile:', profileData);
-      
-      try {
-        const { data, error } = await supabaseClient.from('profiles').insert([profileData]).select();
-        
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-        
-        console.log('Insert successful:', data);
-        
-        localStorage.setItem('uuid', userData.username);
-        localStorage.setItem('username', userData.username);
-        localStorage.setItem('firstName', userData.firstName);
-        localStorage.setItem('color', userData.color);
-        localStorage.setItem('role', userData.role);
-        
-        location.href = '/index.html';
-        
-      } catch (err) {
-        console.error('Finish error:', err);
-        showError('Error creating account: ' + err.message, 'msg3');
-        btn.disabled = false;
-        btn.textContent = 'Let\'s Go!';
+        color: userData.color
+      }]);
+
+      btn.disabled = false;
+      btn.textContent = 'Let\'s Go!';
+
+      if (error) {
+        showError('Error creating profile: ' + error.message, 'msg3');
+        return;
       }
+
+      // Redirect to dashboard
+      window.location.href = '/index.html';
     }
 
-    // Attach event listeners
+    // Event listeners
     document.getElementById('createBtn').addEventListener('click', createAccount);
     document.getElementById('googleBtn').addEventListener('click', googleSignIn);
     document.getElementById('ageSlider').addEventListener('input', (e) => updateAge(e.target.value));
@@ -669,13 +621,11 @@
     document.getElementById('finishBtn').addEventListener('click', finish);
     document.getElementById('firstName').addEventListener('input', (e) => updateInitial(e.target.value));
     
-    // Color picker event listeners
     document.querySelectorAll('.color-option').forEach(el => {
       el.addEventListener('click', () => selectColor(el, el.dataset.color));
     });
 
-    // Enter key handlers
-    document.getElementById('username').addEventListener('keypress', (e) => {
+    document.getElementById('email').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') document.getElementById('password').focus();
     });
     document.getElementById('password').addEventListener('keypress', (e) => {
