@@ -1,4 +1,4 @@
-<!-- signup.html - FIXED -->
+<!-- signup.html - FIXED VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -269,7 +269,6 @@
     <h1>Create Account</h1>
     <p class="subtitle">Join TaskTracker today</p>
 
-    <!-- FIXED: data-callback is the JS function name, not a URL -->
     <div id="g_id_onload" 
          data-client_id="893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com" 
          data-callback="handleGoogleCredential" 
@@ -378,30 +377,16 @@
     <div id="msg"></div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    
-    const supabase = createClient(
+  <!-- ALL JAVASCRIPT IN ONE SCRIPT TAG - NO MODULES -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase immediately (not in module)
+    const supabase = supabase.createClient(
       "https://uqmvpljozjdkvgqneprp.supabase.co",
       "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
     );
 
-    window.supabase = supabase;
-
-    const daySelect = document.getElementById('birthDay');
-    for (let i = 1; i <= 31; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = i;
-      daySelect.appendChild(opt);
-    }
-
-    const uuid = localStorage.getItem('uuid');
-    if (uuid) location.href = '/index.html';
-  </script>
-
-  <script>
-    let supabase = window.supabase;
+    // User data storage
     let userData = {
       username: '',
       password: '',
@@ -412,6 +397,20 @@
       color: '#667eea',
       firstName: ''
     };
+
+    // Check if logged in
+    if (localStorage.getItem('uuid')) {
+      location.href = '/index.html';
+    }
+
+    // Fill days dropdown
+    const daySelect = document.getElementById('birthDay');
+    for (let i = 1; i <= 31; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      daySelect.appendChild(opt);
+    }
 
     function showStep(n) {
       document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
@@ -479,7 +478,7 @@
       }
     }
 
-    // FIXED: Initialize Google with your real Client ID
+    // Google Sign In
     function googleSignIn() {
       google.accounts.id.initialize({
         client_id: '893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com',
@@ -494,16 +493,24 @@
       });
     }
 
-    // FIXED: This is the callback function that Google calls
+    // Google callback - NOW SUPABASE IS DEFINED
     async function handleGoogleCredential(response) {
+      console.log('Google response:', response);
+      
       if (response.credential) {
         try {
-          const payload = JSON.parse(atob(response.credential.split('.')[1]));
+          // Decode JWT
+          const base64 = response.credential.split('.')[1];
+          const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+          const payload = JSON.parse(json);
+          
+          console.log('Payload:', payload);
           
           userData.email = payload.email;
           userData.google = true;
-          userData.firstName = payload.given_name || payload.name.split(' ')[0];
+          userData.firstName = payload.given_name || payload.name?.split(' ')[0] || 'User';
           
+          // Generate username
           const base = payload.email.split('@')[0];
           let username = base;
           let counter = 1;
@@ -522,11 +529,13 @@
           
           userData.username = username;
           
+          // Pre-fill
           document.getElementById('firstName').value = userData.firstName;
           updateInitial(userData.firstName);
           
           showStep(2);
         } catch (err) {
+          console.error(err);
           showError('Google sign-in failed: ' + err.message);
         }
       }
@@ -620,6 +629,7 @@
       }
     }
 
+    // Enter key handlers
     document.getElementById('username')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') document.getElementById('password').focus();
     });
