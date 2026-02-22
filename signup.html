@@ -331,6 +331,7 @@
     </div>
 
     <button id="continueBtn">Continue</button>
+    <div id="msg2" style="display:none; color:red; margin-top:10px;"></div>
   </div>
 
   <!-- STEP 3 -->
@@ -366,7 +367,7 @@
       <button id="finishBtn">Let's Go!</button>
     </div>
     
-    <div id="msg"></div>
+    <div id="msg3" style="display:none; color:red; margin-top:10px;"></div>
   </div>
 
   <!-- Load Supabase -->
@@ -376,7 +377,7 @@
 
   <!-- Main Script -->
   <script>
-    // Initialize Supabase - use window.supabase to avoid redeclaration
+    // Initialize Supabase
     const supabaseClient = window.supabase.createClient(
       "https://uqmvpljozjdkvgqneprp.supabase.co",
       "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
@@ -411,16 +412,27 @@
     function showStep(n) {
       document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
       document.getElementById('step' + n).classList.add('active');
+      // Clear messages when switching steps
+      document.querySelectorAll('[id^="msg"]').forEach(el => el.style.display = 'none');
     }
 
-    function showError(msg) {
-      const el = document.getElementById('msg');
+    function showError(msg, elementId = 'msg') {
+      const el = document.getElementById(elementId);
+      if (!el) {
+        // Fallback to main msg if specific not found
+        const mainMsg = document.getElementById('msg') || document.getElementById('msg2') || document.getElementById('msg3');
+        if (mainMsg) {
+          mainMsg.textContent = msg;
+          mainMsg.style.display = 'block';
+        }
+        return;
+      }
       el.textContent = msg;
       el.style.display = 'block';
     }
 
     function hideError() {
-      document.getElementById('msg').style.display = 'none';
+      document.querySelectorAll('[id^="msg"]').forEach(el => el.style.display = 'none');
     }
 
     // STEP 1: Username signup
@@ -565,7 +577,7 @@
       const day = document.getElementById('birthDay').value;
       
       if (!month || !day) {
-        showError('Please select your birthday');
+        showError('Please select your birthday', 'msg2');
         return;
       }
       
@@ -592,10 +604,12 @@
     }
 
     async function finish() {
+      console.log('Finish clicked', userData);
+      
       const firstName = document.getElementById('firstName').value.trim();
       
       if (!firstName) {
-        showError('Please enter your name');
+        showError('Please enter your name', 'msg3');
         return;
       }
       
@@ -605,20 +619,30 @@
       btn.disabled = true;
       btn.textContent = 'Creating...';
       
+      // Prepare data for insertion
+      const profileData = {
+        username: userData.username,
+        first_name: userData.firstName,
+        email: userData.email,
+        age: userData.age,
+        birth_month: userData.birthMonth,
+        birth_day: userData.birthDay,
+        role: userData.role,
+        color: userData.color,
+        password: userData.google ? null : userData.password
+      };
+      
+      console.log('Inserting profile:', profileData);
+      
       try {
-        const { error } = await supabaseClient.from('profiles').insert([{
-          username: userData.username,
-          first_name: userData.firstName,
-          email: userData.email,
-          age: userData.age,
-          birth_month: userData.birthMonth,
-          birth_day: userData.birthDay,
-          role: userData.role,
-          color: userData.color,
-          password: userData.google ? null : userData.password
-        }]);
+        const { data, error } = await supabaseClient.from('profiles').insert([profileData]).select();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        console.log('Insert successful:', data);
         
         localStorage.setItem('uuid', userData.username);
         localStorage.setItem('username', userData.username);
@@ -629,13 +653,14 @@
         location.href = '/index.html';
         
       } catch (err) {
-        showError('Error: ' + err.message);
+        console.error('Finish error:', err);
+        showError('Error creating account: ' + err.message, 'msg3');
         btn.disabled = false;
         btn.textContent = 'Let\'s Go!';
       }
     }
 
-    // Attach event listeners (no inline onclick)
+    // Attach event listeners
     document.getElementById('createBtn').addEventListener('click', createAccount);
     document.getElementById('googleBtn').addEventListener('click', googleSignIn);
     document.getElementById('ageSlider').addEventListener('input', (e) => updateAge(e.target.value));
