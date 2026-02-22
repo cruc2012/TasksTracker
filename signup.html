@@ -1,4 +1,4 @@
-<!-- signup.html - TaskTracker Signup (Working Version) -->
+<!-- signup.html - FIXED -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -269,7 +269,13 @@
     <h1>Create Account</h1>
     <p class="subtitle">Join TaskTracker today</p>
 
-    <div id="g_id_onload" data-client_id="893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com" data-callback="https://uqmvpljozjdkvgqneprp.supabase.co/auth/v1/callback" data-auto_prompt="false"></div>
+    <!-- FIXED: data-callback is the JS function name, not a URL -->
+    <div id="g_id_onload" 
+         data-client_id="893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com" 
+         data-callback="handleGoogleCredential" 
+         data-auto_prompt="false">
+    </div>
+    
     <button class="google-btn" onclick="googleSignIn()">
       <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
@@ -380,10 +386,8 @@
       "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
     );
 
-    // Make supabase available globally for non-module functions
     window.supabase = supabase;
 
-    // Fill days dropdown
     const daySelect = document.getElementById('birthDay');
     for (let i = 1; i <= 31; i++) {
       const opt = document.createElement('option');
@@ -392,13 +396,11 @@
       daySelect.appendChild(opt);
     }
 
-    // Check if already logged in
     const uuid = localStorage.getItem('uuid');
     if (uuid) location.href = '/index.html';
   </script>
 
   <script>
-    // Global variables
     let supabase = window.supabase;
     let userData = {
       username: '',
@@ -426,7 +428,6 @@
       document.getElementById('msg').style.display = 'none';
     }
 
-    // STEP 1: Create Account
     async function createAccount() {
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
@@ -452,7 +453,6 @@
       hideError();
 
       try {
-        // Check if username exists
         const { data: existing } = await supabase
           .from('profiles')
           .select('username')
@@ -466,14 +466,12 @@
           return;
         }
 
-        // Store for later
         userData.username = username;
         userData.password = password;
         userData.email = username + '@tasktracker.local';
 
         showStep(2);
       } catch (err) {
-        // No existing user found, which is good
         userData.username = username;
         userData.password = password;
         userData.email = username + '@tasktracker.local';
@@ -481,16 +479,14 @@
       }
     }
 
-    // Google Sign In
+    // FIXED: Initialize Google with your real Client ID
     function googleSignIn() {
-      // Initialize Google Sign-In
       google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID',
-        callback: handleGoogle,
+        client_id: '893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com',
+        callback: handleGoogleCredential,
         auto_select: false
       });
       
-      // Open popup
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
           showError('Google sign-in popup blocked. Please allow popups.');
@@ -498,44 +494,44 @@
       });
     }
 
-    async function handleGoogle(response) {
+    // FIXED: This is the callback function that Google calls
+    async function handleGoogleCredential(response) {
       if (response.credential) {
-        // Decode JWT to get user info
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        
-        userData.email = payload.email;
-        userData.google = true;
-        userData.firstName = payload.given_name || payload.name.split(' ')[0];
-        
-        // Generate username from email
-        const base = payload.email.split('@')[0];
-        let username = base;
-        let counter = 1;
-        
-        // Check if username exists and increment if needed
-        while (true) {
-          const { data } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('username', username)
-            .single();
+        try {
+          const payload = JSON.parse(atob(response.credential.split('.')[1]));
           
-          if (!data) break;
-          username = base + counter;
-          counter++;
+          userData.email = payload.email;
+          userData.google = true;
+          userData.firstName = payload.given_name || payload.name.split(' ')[0];
+          
+          const base = payload.email.split('@')[0];
+          let username = base;
+          let counter = 1;
+          
+          while (true) {
+            const { data } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('username', username)
+              .single();
+            
+            if (!data) break;
+            username = base + counter;
+            counter++;
+          }
+          
+          userData.username = username;
+          
+          document.getElementById('firstName').value = userData.firstName;
+          updateInitial(userData.firstName);
+          
+          showStep(2);
+        } catch (err) {
+          showError('Google sign-in failed: ' + err.message);
         }
-        
-        userData.username = username;
-        
-        // Pre-fill name in step 3
-        document.getElementById('firstName').value = userData.firstName;
-        updateInitial(userData.firstName);
-        
-        showStep(2);
       }
     }
 
-    // STEP 2: Age & Birthday
     function updateAge(val) {
       userData.age = parseInt(val);
       document.getElementById('ageDisplay').textContent = val;
@@ -569,7 +565,6 @@
       showStep(2);
     }
 
-    // STEP 3: Profile
     function updateInitial(name) {
       document.getElementById('initial').textContent = name ? name[0].toUpperCase() : '?';
     }
@@ -596,7 +591,6 @@
       btn.textContent = 'Creating...';
       
       try {
-        // Create profile
         const { error } = await supabase.from('profiles').insert([{
           username: userData.username,
           first_name: userData.firstName,
@@ -606,19 +600,17 @@
           birth_day: userData.birthDay,
           role: userData.role,
           color: userData.color,
-          password: userData.google ? null : userData.password // Store password for non-Google users
+          password: userData.google ? null : userData.password
         }]);
         
         if (error) throw error;
         
-        // Save to localStorage (like your Honor Circle example)
-        localStorage.setItem('uuid', userData.username); // Use username as identifier
+        localStorage.setItem('uuid', userData.username);
         localStorage.setItem('username', userData.username);
         localStorage.setItem('firstName', userData.firstName);
         localStorage.setItem('color', userData.color);
         localStorage.setItem('role', userData.role);
         
-        // Go to app
         location.href = '/index.html';
         
       } catch (err) {
@@ -628,7 +620,6 @@
       }
     }
 
-    // Allow Enter key
     document.getElementById('username')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') document.getElementById('password').focus();
     });
@@ -638,5 +629,4 @@
   </script>
 
 </body>
-
 </html>
