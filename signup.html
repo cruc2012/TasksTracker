@@ -1,11 +1,9 @@
-<!-- signup.html - WORKING VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>TaskTracker Sign Up</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
       --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -263,13 +261,13 @@
 </head>
 <body>
 
-  <!-- STEP 1: Account Creation -->
+  <!-- STEP 1 -->
   <div class="box step active" id="step1">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Create Account</h1>
     <p class="subtitle">Join TaskTracker today</p>
 
-    <button class="google-btn" id="googleBtn" onclick="googleSignIn()">
+    <button class="google-btn" id="googleBtn">
       <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
     </button>
@@ -282,14 +280,14 @@
     <input id="password" type="password" placeholder="Create a password">
     <div class="hint">Min 6 characters</div>
     
-    <button id="createBtn" onclick="createAccount()">Sign Up</button>
+    <button id="createBtn">Sign Up</button>
     
     <div id="msg"></div>
     
     <p class="login-link">Already have an account? <a href="/login.html">Sign in</a></p>
   </div>
 
-  <!-- STEP 2: Age & Birthday -->
+  <!-- STEP 2 -->
   <div class="box step" id="step2">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Welcome to TaskTracker</h1>
@@ -302,7 +300,7 @@
         <span>How old are you?</span>
         <span class="age-display" id="ageDisplay">25</span>
       </div>
-      <input type="range" id="ageSlider" min="5" max="100" value="25" oninput="updateAge(this.value)">
+      <input type="range" id="ageSlider" min="5" max="100" value="25">
       <div class="hint">This helps us customize your experience</div>
     </div>
 
@@ -332,10 +330,10 @@
       <p>Create tasks and reward your kids</p>
     </div>
 
-    <button onclick="goToStep3()">Continue</button>
+    <button id="continueBtn">Continue</button>
   </div>
 
-  <!-- STEP 3: Profile -->
+  <!-- STEP 3 -->
   <div class="box step" id="step3">
     <img src="/images/logo.png" alt="TaskTracker" class="logo" onerror="this.style.display='none'">
     <h1>Almost there!</h1>
@@ -345,36 +343,41 @@
       <span id="initial">?</span>
     </div>
 
-    <input id="firstName" placeholder="Your first name" oninput="updateInitial(this.value)">
+    <input id="firstName" placeholder="Your first name">
 
     <div style="text-align: left; margin-top: 20px;">
       <label style="font-weight: 600;">Pick your color</label>
       <div class="color-grid">
-        <div class="color-option selected" style="background-color: #667eea;" onclick="selectColor(this, '#667eea')"></div>
-        <div class="color-option" style="background-color: #f093fb;" onclick="selectColor(this, '#f093fb')"></div>
-        <div class="color-option" style="background-color: #4facfe;" onclick="selectColor(this, '#4facfe')"></div>
-        <div class="color-option" style="background-color: #43e97b;" onclick="selectColor(this, '#43e97b')"></div>
-        <div class="color-option" style="background-color: #fa709a;" onclick="selectColor(this, '#fa709a')"></div>
-        <div class="color-option" style="background-color: #fee140;" onclick="selectColor(this, '#fee140')"></div>
-        <div class="color-option" style="background-color: #30cfd0;" onclick="selectColor(this, '#30cfd0')"></div>
-        <div class="color-option" style="background-color: #a8edea;" onclick="selectColor(this, '#a8edea')"></div>
-        <div class="color-option" style="background-color: #ff9a9e;" onclick="selectColor(this, '#ff9a9e')"></div>
-        <div class="color-option" style="background-color: #764ba2;" onclick="selectColor(this, '#764ba2')"></div>
+        <div class="color-option selected" style="background-color: #667eea;" data-color="#667eea"></div>
+        <div class="color-option" style="background-color: #f093fb;" data-color="#f093fb"></div>
+        <div class="color-option" style="background-color: #4facfe;" data-color="#4facfe"></div>
+        <div class="color-option" style="background-color: #43e97b;" data-color="#43e97b"></div>
+        <div class="color-option" style="background-color: #fa709a;" data-color="#fa709a"></div>
+        <div class="color-option" style="background-color: #fee140;" data-color="#fee140"></div>
+        <div class="color-option" style="background-color: #30cfd0;" data-color="#30cfd0"></div>
+        <div class="color-option" style="background-color: #a8edea;" data-color="#a8edea"></div>
+        <div class="color-option" style="background-color: #ff9a9e;" data-color="#ff9a9e"></div>
+        <div class="color-option" style="background-color: #764ba2;" data-color="#764ba2"></div>
       </div>
     </div>
 
     <div class="row" style="margin-top: 20px;">
-      <button class="back-btn" onclick="goToStep2()">Back</button>
-      <button onclick="finish()">Let's Go!</button>
+      <button class="back-btn" id="backBtn">Back</button>
+      <button id="finishBtn">Let's Go!</button>
     </div>
     
     <div id="msg"></div>
   </div>
 
+  <!-- Load Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load Google -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Main Script -->
   <script>
-    // Initialize Supabase
-    const supabase = window.supabase.createClient(
+    // Initialize Supabase - use window.supabase to avoid redeclaration
+    const supabaseClient = window.supabase.createClient(
       "https://uqmvpljozjdkvgqneprp.supabase.co",
       "sb_publishable_pWNEEuLuDxj9MZ9ImAF1ag_rORKuvCL"
     );
@@ -396,15 +399,15 @@
       location.href = '/index.html';
     }
 
-    // Fill days
-    const daySelect = document.getElementById('birthDay');
+    // Fill days dropdown
     for (let i = 1; i <= 31; i++) {
       const opt = document.createElement('option');
       opt.value = i;
       opt.textContent = i;
-      daySelect.appendChild(opt);
+      document.getElementById('birthDay').appendChild(opt);
     }
 
+    // Navigation
     function showStep(n) {
       document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
       document.getElementById('step' + n).classList.add('active');
@@ -420,10 +423,10 @@
       document.getElementById('msg').style.display = 'none';
     }
 
+    // STEP 1: Username signup
     async function createAccount() {
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
-      const btn = document.getElementById('createBtn');
 
       if (!username || !password) {
         showError('Please fill in all fields');
@@ -440,12 +443,10 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = 'Checking...';
       hideError();
 
       try {
-        const { data: existing } = await supabase
+        const { data: existing } = await supabaseClient
           .from('profiles')
           .select('username')
           .eq('username', username)
@@ -453,15 +454,12 @@
 
         if (existing) {
           showError('Username already taken');
-          btn.disabled = false;
-          btn.textContent = 'Sign Up';
           return;
         }
 
         userData.username = username;
         userData.password = password;
         userData.email = username + '@tasktracker.local';
-
         showStep(2);
       } catch (err) {
         userData.username = username;
@@ -471,14 +469,10 @@
       }
     }
 
-    // CRITICAL FIX: Initialize Google ONCE when page loads, not on button click
-    // and use the One Tap UI which is more reliable than prompt()
-    let googleInitialized = false;
-
-    function initGoogle() {
-      if (googleInitialized) return;
+    // Google Sign In
+    function googleSignIn() {
       if (typeof google === 'undefined') {
-        console.log('Google not loaded yet');
+        showError('Google API not loaded yet. Please wait and try again.');
         return;
       }
 
@@ -487,87 +481,71 @@
           client_id: '893961993976-im0orn6nkbj7jusofsbi15fl87r5r5f4.apps.googleusercontent.com',
           callback: handleGoogleCredential,
           auto_select: false,
-          cancel_on_tap_outside: true,
-          prompt_parent_id: 'googleBtn' // Attach to button area
+          cancel_on_tap_outside: true
         });
-        googleInitialized = true;
-        console.log('Google initialized');
+
+        google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed()) {
+            showError('Sign-in popup blocked. Please allow popups for this site.');
+          } else if (notification.isSkippedMoment()) {
+            showError('Sign-in was skipped. Please try again.');
+          }
+        });
       } catch (e) {
-        console.error('Google init error:', e);
+        showError('Google Sign-In error: ' + e.message);
+        console.error(e);
       }
-    }
-
-    // Try to init immediately and also after delay
-    initGoogle();
-    setTimeout(initGoogle, 1000);
-
-    function googleSignIn() {
-      if (!googleInitialized) {
-        showError('Google not ready yet. Please wait...');
-        initGoogle();
-        return;
-      }
-
-      // Use One Tap UI instead of prompt() - it's more reliable
-      google.accounts.id.prompt((notification) => {
-        console.log('Prompt notification:', notification);
-        
-        // If dismissed or skipped, show error
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Try again with different method - render button explicitly
-          showError('Please use the username/password option or try again');
-        }
-      });
     }
 
     // Global callback for Google
     window.handleGoogleCredential = async function(response) {
-      console.log('Google callback received', response);
+      console.log('Google callback:', response);
       
-      if (response.credential) {
-        try {
-          const base64 = response.credential.split('.')[1];
-          const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
-          const payload = JSON.parse(json);
+      if (!response.credential) {
+        showError('No credential received from Google');
+        return;
+      }
+
+      try {
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const json = atob(base64);
+        const payload = JSON.parse(json);
+        
+        userData.email = payload.email;
+        userData.google = true;
+        userData.firstName = payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'User');
+        
+        const base = payload.email.split('@')[0];
+        let username = base;
+        let counter = 1;
+        
+        while (true) {
+          const { data } = await supabaseClient
+            .from('profiles')
+            .select('username')
+            .eq('username', username)
+            .single();
           
-          console.log('Payload:', payload);
-          
-          userData.email = payload.email;
-          userData.google = true;
-          userData.firstName = payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'User');
-          
-          // Generate username
-          const base = payload.email.split('@')[0];
-          let username = base;
-          let counter = 1;
-          
-          while (true) {
-            const { data } = await supabase
-              .from('profiles')
-              .select('username')
-              .eq('username', username)
-              .single();
-            
-            if (!data) break;
-            username = base + counter;
-            counter++;
-            if (counter > 100) break;
-          }
-          
-          userData.username = username;
-          
-          // Pre-fill
-          document.getElementById('firstName').value = userData.firstName;
-          updateInitial(userData.firstName);
-          
-          showStep(2);
-        } catch (err) {
-          console.error(err);
-          showError('Google sign-in failed: ' + err.message);
+          if (!data) break;
+          username = base + counter;
+          counter++;
+          if (counter > 100) break;
         }
+        
+        userData.username = username;
+        
+        document.getElementById('firstName').value = userData.firstName;
+        updateInitial(userData.firstName);
+        showStep(2);
+        
+      } catch (err) {
+        console.error('Google error:', err);
+        showError('Google sign-in failed: ' + err.message);
       }
     };
 
+    // STEP 2: Age/Birthday
     function updateAge(val) {
       userData.age = parseInt(val);
       document.getElementById('ageDisplay').textContent = val;
@@ -601,6 +579,7 @@
       showStep(2);
     }
 
+    // STEP 3: Profile
     function updateInitial(name) {
       document.getElementById('initial').textContent = name ? name[0].toUpperCase() : '?';
     }
@@ -622,12 +601,12 @@
       
       userData.firstName = firstName;
       
-      const btn = document.querySelector('#step3 button:last-of-type');
+      const btn = document.getElementById('finishBtn');
       btn.disabled = true;
       btn.textContent = 'Creating...';
       
       try {
-        const { error } = await supabase.from('profiles').insert([{
+        const { error } = await supabaseClient.from('profiles').insert([{
           username: userData.username,
           first_name: userData.firstName,
           email: userData.email,
@@ -656,11 +635,25 @@
       }
     }
 
-    // Enter keys
-    document.getElementById('username')?.addEventListener('keypress', (e) => {
+    // Attach event listeners (no inline onclick)
+    document.getElementById('createBtn').addEventListener('click', createAccount);
+    document.getElementById('googleBtn').addEventListener('click', googleSignIn);
+    document.getElementById('ageSlider').addEventListener('input', (e) => updateAge(e.target.value));
+    document.getElementById('continueBtn').addEventListener('click', goToStep3);
+    document.getElementById('backBtn').addEventListener('click', goToStep2);
+    document.getElementById('finishBtn').addEventListener('click', finish);
+    document.getElementById('firstName').addEventListener('input', (e) => updateInitial(e.target.value));
+    
+    // Color picker event listeners
+    document.querySelectorAll('.color-option').forEach(el => {
+      el.addEventListener('click', () => selectColor(el, el.dataset.color));
+    });
+
+    // Enter key handlers
+    document.getElementById('username').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') document.getElementById('password').focus();
     });
-    document.getElementById('password')?.addEventListener('keypress', (e) => {
+    document.getElementById('password').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') createAccount();
     });
   </script>
